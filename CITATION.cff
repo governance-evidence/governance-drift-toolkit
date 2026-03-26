@@ -6,8 +6,9 @@ authors:
   - given-names: Oleg
     family-names: Solozobov
 version: 0.1.0
-date-released: "2026-03-25"
+date-released: "2026-03-26"
 license: Apache-2.0
+doi: "10.5281/zenodo.19236418"
 repository-code: "https://github.com/governance-evidence/governance-drift-toolkit"
 abstract: >-
   A Python toolkit for label-free monitoring of governance evidence

@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/governance-evidence/governance-drift-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/governance-evidence/governance-drift-toolkit/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://github.com/governance-evidence/governance-drift-toolkit)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19236418.svg)](https://doi.org/10.5281/zenodo.19236418)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://github.com/governance-evidence/governance-drift-toolkit/blob/main/LICENSE)
 [![Release](https://img.shields.io/github/v/release/governance-evidence/governance-drift-toolkit)](https://github.com/governance-evidence/governance-drift-toolkit/releases)
 
