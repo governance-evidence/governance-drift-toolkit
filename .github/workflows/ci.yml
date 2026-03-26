@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+      - name: Ruff check
+        run: ruff check src/ tests/ examples/ scripts/
+      - name: Ruff format
+        run: ruff format --check src/ tests/ examples/ scripts/
+      - name: Mypy
+        run: mypy src/
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+      - name: Run tests with 100% coverage
+        run: >-
+          pytest
+          --cov=drift
+          --cov=integrations
+          --cov-report=term-missing
+          --cov-fail-under=100
+          -q
+
+  wheel-smoke:
+    name: Wheel Smoke Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Build wheel
+        run: |
+          pip install --upgrade pip wheel
+          pip wheel --no-deps . -w dist
+      - name: Install wheel into clean environment
+        run: |
+          python -m venv /tmp/gdt-venv
+          /tmp/gdt-venv/bin/pip install --upgrade pip
+          /tmp/gdt-venv/bin/pip install dist/*.whl
+      - name: Run smoke test
+        run: |
+          /tmp/gdt-venv/bin/python -c "
+          from drift import compute_composite_alert, determine_response, fraud_detection_config
+          from drift.monitors.score_distribution import compute_psi
+          from drift.monitors.uncertainty import compute_prediction_entropy
+          import numpy as np
+          rng = np.random.default_rng(42)
+          config = fraud_detection_config()
+          results = [compute_psi(rng.normal(0.3, 0.15, 500), rng.normal(0.35, 0.15, 500)),
+                     compute_prediction_entropy(rng.uniform(0.3, 0.7, 200))]
+          alert = compute_composite_alert(results, config)
+          response = determine_response(alert, config)
+          assert 0.0 <= alert.weighted_score <= 1.0
+          print(f'Smoke OK: S={alert.weighted_score:.3f} {response.action.value}')
+          "

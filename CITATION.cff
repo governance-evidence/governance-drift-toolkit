@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: "Governance Drift Toolkit"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - given-names: Oleg
+    family-names: Solozobov
+version: 0.1.0
+date-released: "2026-03-25"
+license: Apache-2.0
+repository-code: "https://github.com/governance-evidence/governance-drift-toolkit"
+abstract: >-
+  A Python toolkit for label-free monitoring of governance evidence
+  degradation in risk decision systems. Implements seven proxy metric
+  categories with composite alerting, harmful-shift filtering, and a
+  governance response chain for detecting when governance evidence
+  sufficiency is at risk under delayed ground truth conditions.
+keywords:
+  - governance drift
+  - proxy monitoring
+  - evidence degradation
+  - delayed ground truth
+  - harmful shift
+  - e-value sequential testing
+  - model monitoring
