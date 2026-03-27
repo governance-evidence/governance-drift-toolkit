@@ -5,6 +5,12 @@ from __future__ import annotations
 from drift.composite import compute_composite_alert
 from drift.config import credit_scoring_config, default_config, fraud_detection_config
 from drift.harmful_shift import apply_suppression, is_harmful_shift
+from drift.proxy_sufficiency import (
+    ProxySufficiencyResult,
+    compute_proxy_sufficiency,
+    estimate_dimensions,
+    normalize_proxy,
+)
 from drift.response import determine_response, escalation_chain
 from drift.sequential import DriftEValueAccumulator
 from drift.types import (
@@ -29,13 +35,17 @@ __all__ = [
     "GovernanceResponse",
     "MonitorCategory",
     "MonitorResult",
+    "ProxySufficiencyResult",
     "ResponseAction",
     "apply_suppression",
     "compute_composite_alert",
+    "compute_proxy_sufficiency",
     "credit_scoring_config",
     "default_config",
     "determine_response",
     "escalation_chain",
+    "estimate_dimensions",
     "fraud_detection_config",
     "is_harmful_shift",
+    "normalize_proxy",
 ]

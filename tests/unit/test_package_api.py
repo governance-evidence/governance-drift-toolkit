@@ -17,15 +17,19 @@ class TestPublicApi:
             "GovernanceResponse",
             "MonitorCategory",
             "MonitorResult",
+            "ProxySufficiencyResult",
             "ResponseAction",
             "apply_suppression",
             "compute_composite_alert",
+            "compute_proxy_sufficiency",
             "credit_scoring_config",
             "default_config",
             "determine_response",
             "escalation_chain",
+            "estimate_dimensions",
             "fraud_detection_config",
             "is_harmful_shift",
+            "normalize_proxy",
         }
         assert set(drift.__all__) == expected
 
