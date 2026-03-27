@@ -79,11 +79,16 @@ def compute_composite_alert(
     cross_model = MonitorCategory.CROSS_MODEL
     triggered_count = sum(1 for t in category_triggered.values() if t)
 
+    has_genuine_cross_model_monitor = any(
+        r.category == cross_model and "confidence" not in r.monitor_name.lower() for r in results
+    )
+
     if (
         score_dist in category_triggered
         and not category_triggered[score_dist]
         and triggered_count >= 2
         and cross_model in weights
+        and has_genuine_cross_model_monitor
     ):
         redistributed = weights[score_dist]
         weights[score_dist] = 0.0

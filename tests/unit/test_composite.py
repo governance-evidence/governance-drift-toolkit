@@ -3,6 +3,7 @@
 import pytest
 
 from drift.composite import compute_composite_alert
+from drift.config import credit_scoring_config
 from drift.sequential import DriftEValueAccumulator
 from drift.types import (
     AlertSeverity,
@@ -100,7 +101,7 @@ class TestComputeCompositeAlert:
             _result(MonitorCategory.SCORE_DISTRIBUTION, False),
             _result(MonitorCategory.FEATURE_DRIFT, True),
             _result(MonitorCategory.UNCERTAINTY, True),
-            _result(MonitorCategory.CROSS_MODEL, True),
+            _result(MonitorCategory.CROSS_MODEL, True, name="Cross-Model-Disagreement"),
         ]
         alert = compute_composite_alert(results, config)
         # Should have redistributed SCORE_DISTRIBUTION weight to CROSS_MODEL
@@ -130,3 +131,25 @@ class TestComputeCompositeAlert:
         alert = compute_composite_alert(results, config)
         # Second monitor triggers the category
         assert alert.triggered_monitors == 1
+
+    def test_credit_scoring_four_signal_weighting(self):
+        config = credit_scoring_config()
+        results = [
+            _result(MonitorCategory.SCORE_DISTRIBUTION, False, name="PSI"),
+            _result(MonitorCategory.FEATURE_DRIFT, True, name="Feature-PSI"),
+            _result(MonitorCategory.UNCERTAINTY, True, name="Entropy"),
+            _result(MonitorCategory.CROSS_MODEL, False, name="ConfKS"),
+        ]
+        alert = compute_composite_alert(results, config)
+        assert abs(alert.weighted_score - (7 / 12)) < 1e-9
+
+    def test_credit_scoring_redistribution_when_cross_model_triggered(self):
+        config = credit_scoring_config()
+        results = [
+            _result(MonitorCategory.SCORE_DISTRIBUTION, False, name="PSI"),
+            _result(MonitorCategory.FEATURE_DRIFT, True, name="Feature-PSI"),
+            _result(MonitorCategory.UNCERTAINTY, True, name="Entropy"),
+            _result(MonitorCategory.CROSS_MODEL, True, name="Cross-Model-Disagreement"),
+        ]
+        alert = compute_composite_alert(results, config)
+        assert abs(alert.weighted_score - 1.0) < 1e-9
