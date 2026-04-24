@@ -2,7 +2,9 @@
 
 [![CI](https://github.com/governance-evidence/governance-drift-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/governance-evidence/governance-drift-toolkit/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)](https://github.com/governance-evidence/governance-drift-toolkit)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19236418.svg)](https://doi.org/10.5281/zenodo.19236418)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19236417.svg)](https://doi.org/10.5281/zenodo.19236417)
+[![arXiv (primary)](https://img.shields.io/badge/arXiv-2604.17836-b31b1b.svg)](https://arxiv.org/abs/2604.17836)
+[![arXiv (companion)](https://img.shields.io/badge/arXiv-2604.15740-b31b1b.svg)](https://arxiv.org/abs/2604.15740)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://github.com/governance-evidence/governance-drift-toolkit/blob/main/LICENSE)
 [![Release](https://img.shields.io/github/v/release/governance-evidence/governance-drift-toolkit)](https://github.com/governance-evidence/governance-drift-toolkit/releases)
 
@@ -13,6 +15,26 @@ even though we can't see the ground truth yet?"*
 The toolkit combines proxy drift monitors, composite alerting, harmful-shift
 suppression, and a governance response chain for delayed-label environments
 such as fraud detection, credit scoring, and related risk systems.
+
+## Academic Context
+
+This toolkit is shared across two papers in the governance-evidence series.
+
+**Primary** (label-free extension, current focus):
+
+> Solozobov, O. (2026). *Label-Free Detection of Governance Evidence Degradation in Risk Decision Systems*.
+> arXiv:2604.17836. <https://arxiv.org/abs/2604.17836>
+
+**Companion** (introduces the drift toolkit as part of the sufficiency framework):
+
+> Solozobov, O. (2026). *Evidence Sufficiency Under Delayed Ground Truth: Proxy Monitoring for Risk Decision Systems*.
+> arXiv:2604.15740. <https://arxiv.org/abs/2604.15740>
+
+**Synthesis context** — this toolkit is one of the artifacts whose transferability across decision system
+architectures is assessed in:
+
+> Solozobov, O. (2026). *Governed Auditable Decisioning Under Uncertainty: Synthesis and Agentic Extension*.
+> arXiv:2604.19112. <https://arxiv.org/abs/2604.19112>
 
 ## Install
 
@@ -117,11 +139,51 @@ Monitor -> Alert -> Escalate -> Fallback -> Rollback
 
 This toolkit is part of the [governance-evidence](https://github.com/governance-evidence) toolkit:
 
-| Repository | Role | DOI |
-| ---------- | ---- | --- |
-| [decision-event-schema](https://github.com/governance-evidence/decision-event-schema) | Schema for events this toolkit monitors | [10.5281/zenodo.18923178](https://doi.org/10.5281/zenodo.18923178) |
-| [evidence-sufficiency-calc](https://github.com/governance-evidence/evidence-sufficiency-calc) | Sufficiency scoring — bidirectional integration with this toolkit | Pending |
-| [evidence-collector-sdk](https://github.com/governance-evidence/evidence-collector-sdk) | Collects evidence streams that feed into this toolkit | Pending |
+| Repository | Role | Concept DOI |
+| ---------- | ---- | ----------- |
+| [decision-event-schema](https://github.com/governance-evidence/decision-event-schema) | Schema for events this toolkit monitors | [10.5281/zenodo.18923177](https://doi.org/10.5281/zenodo.18923177) |
+| [evidence-sufficiency-calc](https://github.com/governance-evidence/evidence-sufficiency-calc) | Sufficiency scoring — bidirectional integration with this toolkit | [10.5281/zenodo.19233930](https://doi.org/10.5281/zenodo.19233930) |
+| [evidence-collector-sdk](https://github.com/governance-evidence/evidence-collector-sdk) | Collects evidence streams that feed into this toolkit | [10.5281/zenodo.19245404](https://doi.org/10.5281/zenodo.19245404) |
+| [governance-benchmark-dataset](https://github.com/governance-evidence/governance-benchmark-dataset) | Cross-architecture benchmark that validates this toolkit's scenarios | [10.5281/zenodo.19248722](https://doi.org/10.5281/zenodo.19248722) |
+
+All DOIs above are **concept DOIs** -- each resolves to the latest Zenodo release of that artifact.
+
+## Citation
+
+If you use this toolkit in your research, please cite both the paper and the software artifact.
+
+**Paper (primary):**
+
+```bibtex
+@misc{solozobov2026labelfree,
+  author = {Solozobov, Oleg},
+  title  = {Label-Free Detection of Governance Evidence Degradation in Risk Decision Systems},
+  year   = {2026},
+  eprint = {2604.17836},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CY},
+  doi    = {10.48550/arXiv.2604.17836},
+  url    = {https://arxiv.org/abs/2604.17836}
+}
+```
+
+**Software (this repository):**
+
+```bibtex
+@software{solozobov2026governancedrift,
+  author  = {Solozobov, Oleg},
+  title   = {Governance Drift Toolkit},
+  version = {0.2.1},
+  year    = {2026},
+  url     = {https://github.com/governance-evidence/governance-drift-toolkit},
+  doi     = {10.5281/zenodo.19236417}
+}
+```
+
+The software `doi` above is the **concept DOI** (always resolves to the latest Zenodo release).
+The current v0.2.1 version DOI is [10.5281/zenodo.19248601](https://doi.org/10.5281/zenodo.19248601).
+
+See [CITATION.cff](CITATION.cff) for machine-readable citation metadata.
 
 ## License
 

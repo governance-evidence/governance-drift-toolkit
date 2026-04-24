@@ -5,11 +5,26 @@ type: software
 authors:
   - given-names: Oleg
     family-names: Solozobov
-version: 0.1.0
-date-released: "2026-03-26"
+    orcid: "https://orcid.org/0009-0009-0105-7459"
+version: 0.2.1
+date-released: "2026-03-27"
 license: Apache-2.0
-doi: "10.5281/zenodo.19236418"
+doi: "10.5281/zenodo.19248601"  # v0.2.1 version DOI
 repository-code: "https://github.com/governance-evidence/governance-drift-toolkit"
+url: "https://github.com/governance-evidence/governance-drift-toolkit"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.19236417"
+    description: "Concept DOI (always resolves to latest Zenodo release)"
+  - type: other
+    value: "arXiv:2604.17836"
+    description: "Primary preprint: Label-Free Detection of Governance Evidence Degradation in Risk Decision Systems"
+  - type: other
+    value: "arXiv:2604.15740"
+    description: "Companion preprint: Evidence Sufficiency Under Delayed Ground Truth (toolkit originates here)"
+  - type: other
+    value: "arXiv:2604.19112"
+    description: "Synthesis preprint: Governed Auditable Decisioning Under Uncertainty"
 abstract: >-
   A Python toolkit for label-free monitoring of governance evidence
   degradation in risk decision systems. Implements seven proxy metric
