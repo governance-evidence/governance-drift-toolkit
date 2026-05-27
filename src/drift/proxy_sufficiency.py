@@ -1,7 +1,7 @@
 """Continuous proxy sufficiency estimation (Section 4.4).
 
 Maps raw proxy monitor statistics to continuous dimension estimates,
-then computes S_proxy(t) using the DA-05 sufficiency formula:
+then computes S_proxy(t) using the Evidence Sufficiency Calculator formula:
 
     S_proxy(t) = A(t) * [w_c*C + w_f*F + w_r*R_proxy + w_p*P_proxy]
 

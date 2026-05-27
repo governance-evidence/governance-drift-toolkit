@@ -322,14 +322,14 @@ def _calibrate_caps(
     return caps
 
 
-def _compute_da05_sufficiency(
+def _compute_evidence_sufficiency(
     win_df: pd.DataFrame,
     ref_df: pd.DataFrame,
     model: object,
     scaler: object,
     window_idx: int,
 ) -> tuple[float, float, float, float, float, float]:
-    """Compute DA-05 empirical S(t) for one window.
+    """Compute Evidence Sufficiency Calculator empirical S(t) for one window.
 
     Returns (C, F, R_empirical, P_empirical, A, S) tuple.
     """
@@ -361,7 +361,7 @@ def _compute_da05_sufficiency(
     ks_stat = float(ks_2samp(ref_scores, cur_scores).statistic)
     p_repr = max(0.0, 1.0 - ks_stat / 0.3)
 
-    # Gate and composite (DA-05 formula with fraud detection weights)
+    # Gate and composite (Evidence Sufficiency Calculator formula with fraud detection weights)
     tau_c, tau_r = 0.6, 0.15
     gate = min(1.0, label_avail / tau_c) * min(1.0, f1 / tau_r)
     w = {"c": 0.20, "f": 0.30, "r": 0.30, "p": 0.20}
@@ -381,7 +381,7 @@ def _monitor_window(
     window_idx: int,
     caps: dict[str, float],
 ) -> dict:
-    """Run all monitors, compute continuous S_proxy(t) and DA-05 S(t)."""
+    """Run all monitors, compute continuous S_proxy(t) and Evidence Sufficiency Calculator S(t)."""
     from drift.monitors.feature_drift import compute_feature_psi
     from drift.monitors.score_distribution import compute_psi
     from drift.monitors.uncertainty import compute_confidence_drift, compute_prediction_entropy
@@ -408,8 +408,8 @@ def _monitor_window(
     p_ent = normalize_proxy(abs(entr_stat - ref_entropy), caps["entropy"])
     p_conf = normalize_proxy(conf_stat, caps["conf"])
 
-    # DA-05 empirical S(t)
-    c, f, _r_emp, _p_emp, _gate_emp, s_da05 = _compute_da05_sufficiency(
+    # Evidence Sufficiency Calculator empirical S(t)
+    c, f, _r_emp, _p_emp, _gate_emp, s_evidence_sufficiency = _compute_evidence_sufficiency(
         win_df,
         ref_df,
         model,
@@ -453,7 +453,7 @@ def _monitor_window(
         "p_proxy": proxy_result.p_proxy,
         "a_proxy": proxy_result.gate,
         "s_proxy": proxy_result.s_proxy,
-        "s_da05": s_da05,
+        "s_evidence_sufficiency": s_evidence_sufficiency,
         "status": proxy_result.status,
     }
 
@@ -462,7 +462,7 @@ def _monitor_window(
         f"{psi_stat:>6.4f} | {fpsi_stat:>7.3f} | "
         f"{p_score:>5.3f} | {p_feat:>5.3f} | {p_unc:>5.3f} | "
         f"{proxy_result.r_proxy:>5.3f} | {proxy_result.p_proxy:>5.3f} | "
-        f"{proxy_result.gate:>5.3f} | {proxy_result.s_proxy:>6.3f} | {s_da05:>6.3f} | "
+        f"{proxy_result.gate:>5.3f} | {proxy_result.s_proxy:>6.3f} | {s_evidence_sufficiency:>6.3f} | "
         f"{proxy_result.status:>12}"
     )
     return row
@@ -487,7 +487,7 @@ def _run_scenario(
         f"{'PSI':>6} | {'FeatPSI':>7} | "
         f"{'P_scr':>5} | {'P_fea':>5} | {'P_unc':>5} | "
         f"{'R_prx':>5} | {'P_prx':>5} | "
-        f"{'A_prx':>5} | {'S_prx':>6} | {'S_da5':>6} | "
+        f"{'A_prx':>5} | {'S_prx':>6} | {'S_evc':>6} | "
         f"{'Status':>12}"
     )
 
@@ -593,12 +593,12 @@ def main() -> None:
     ]:
         rows = all_results[name]
         last_s = rows[-1]["s_proxy"] if rows else 0
-        last_da05 = rows[-1]["s_da05"] if rows else 0
+        last_evidence_sufficiency = rows[-1]["s_evidence_sufficiency"] if rows else 0
         # Detection: S_proxy dropped below baseline range
         drops = sum(1 for r in rows if r["s_proxy"] < baseline_max * 0.95)
         det_rate = drops / len(rows) if rows else 0
         print(
-            f"  {label:30s}: S_proxy={last_s:.3f}  S_da05={last_da05:.3f}  detection={det_rate:.0%}"
+            f"  {label:30s}: S_proxy={last_s:.3f}  S_evidence={last_evidence_sufficiency:.3f}  detection={det_rate:.0%}"
         )
 
     print()
