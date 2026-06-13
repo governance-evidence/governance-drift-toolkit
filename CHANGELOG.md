@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.2] - 2026-06-13
 
+Zenodo release: [10.5281/zenodo.20673692](https://doi.org/10.5281/zenodo.20673692).
+
 ### Fixed
 
 - `drift.__version__` now matches the released package version (it had stayed at 0.1.0 after the v0.2.x releases); the
