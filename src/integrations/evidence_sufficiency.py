@@ -89,8 +89,11 @@ def get_sufficiency_score(
     if y_true is not None and y_pred is not None:
         reliability = compute_reliability(y_true=y_true, y_pred=y_pred)
     else:
+        reliability_value = dimensions.get("reliability", 0.85)
         reliability = DimensionScore(
-            value=dimensions.get("reliability", 0.85),
+            value=reliability_value,
+            confidence_low=reliability_value,
+            confidence_high=reliability_value,
             label="reliability",
         )
 
@@ -102,8 +105,11 @@ def get_sufficiency_score(
             ks_cap=config.ks_cap,
         )
     else:
+        representativeness_value = dimensions.get("representativeness", 0.85)
         representativeness = DimensionScore(
-            value=dimensions.get("representativeness", 0.85),
+            value=representativeness_value,
+            confidence_low=representativeness_value,
+            confidence_high=representativeness_value,
             label="representativeness",
         )
 

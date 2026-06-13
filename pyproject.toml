@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "governance-drift-toolkit"
-version = "0.2.1"
+version = "0.2.2"
 requires-python = ">=3.11,<4"
 description = "Label-free monitoring of governance evidence degradation in risk decision systems"
 readme = "README.md"

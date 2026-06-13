@@ -12,7 +12,10 @@ from integrations.evidence_sufficiency import get_sufficiency_score
 class TestGetSufficiencyScore:
     def test_import_error_without_dependency(self):
         """Raises ImportError when sufficiency package is not installed."""
-        with pytest.raises(ImportError, match="evidence-sufficiency-calc"):
+        with (
+            patch.dict(sys.modules, {"sufficiency": None}),
+            pytest.raises(ImportError, match="evidence-sufficiency-calc"),
+        ):
             get_sufficiency_score({"completeness": 0.85, "freshness_days": 7.0})
 
     def test_success_with_all_four_dimensions(self):

@@ -1,11 +1,13 @@
 """Tests for public API exports."""
 
+from importlib.metadata import version
+
 import drift
 
 
 class TestPublicApi:
-    def test_version(self):
-        assert drift.__version__ == "0.1.0"
+    def test_version_matches_installed_metadata(self):
+        assert drift.__version__ == version("governance-drift-toolkit")
 
     def test_all_exports(self):
         expected = {

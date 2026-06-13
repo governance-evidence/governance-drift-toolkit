@@ -21,35 +21,12 @@ from scipy import stats
 
 from drift.types import MonitorCategory, MonitorResult
 
+from ._common import binned_proportions as _bin_proportions
+
 if TYPE_CHECKING:
     from typing import Any
 
     from numpy.typing import NDArray
-
-
-def _bin_proportions(
-    data: NDArray[np.floating[Any]],
-    edges: NDArray[np.floating[Any]],
-) -> NDArray[np.float64]:
-    """Compute bin proportions with epsilon smoothing to avoid log(0).
-
-    Parameters
-    ----------
-    data : ndarray
-        1-D array of values to bin.
-    edges : ndarray
-        Bin edges (n_bins + 1 values).
-
-    Returns
-    -------
-    ndarray
-        Bin proportions (sum to ~1.0), smoothed with epsilon.
-    """
-    counts = np.histogram(data, bins=edges)[0].astype(np.float64)
-    epsilon = 1e-8
-    counts += epsilon
-    result: NDArray[np.float64] = counts / counts.sum()
-    return result
 
 
 def compute_psi(

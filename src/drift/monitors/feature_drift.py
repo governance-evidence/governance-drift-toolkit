@@ -14,6 +14,8 @@ from scipy import stats as sp_stats
 
 from drift.types import MonitorCategory, MonitorResult
 
+from ._common import binned_proportions
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
@@ -31,11 +33,8 @@ def _per_feature_psi(
     edges[0] = -np.inf
     edges[-1] = np.inf
 
-    epsilon = 1e-8
-    ref_counts = np.histogram(ref_col, bins=edges)[0].astype(np.float64) + epsilon
-    cur_counts = np.histogram(cur_col, bins=edges)[0].astype(np.float64) + epsilon
-    p = ref_counts / ref_counts.sum()
-    q = cur_counts / cur_counts.sum()
+    p = binned_proportions(ref_col, edges)
+    q = binned_proportions(cur_col, edges)
     return float(np.sum((p - q) * np.log(p / q)))
 
 
@@ -176,16 +175,13 @@ def compute_feature_kl(
         msg = f"feature_names length {len(names)} != n_features {n_features}"
         raise ValueError(msg)
 
-    epsilon = 1e-8
     kl_values: dict[str, float] = {}
     for i, name in enumerate(names):
         edges = np.linspace(float(ref[:, i].min()), float(ref[:, i].max()), n_bins + 1)
         edges[0] = -np.inf
         edges[-1] = np.inf
-        ref_counts = np.histogram(ref[:, i], bins=edges)[0].astype(np.float64) + epsilon
-        cur_counts = np.histogram(cur[:, i], bins=edges)[0].astype(np.float64) + epsilon
-        p = ref_counts / ref_counts.sum()
-        q = cur_counts / cur_counts.sum()
+        p = binned_proportions(ref[:, i], edges)
+        q = binned_proportions(cur[:, i], edges)
         kl_values[name] = float(sp_stats.entropy(p, q))
 
     max_kl = max(kl_values.values())

@@ -12,6 +12,24 @@ permissions:
   contents: read
 
 jobs:
+  test-sufficiency-integration:
+    name: "Test (sufficiency extra, live bridge)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install package with dev extras and the sibling calculator
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install "evidence-sufficiency-calc @ git+https://github.com/governance-evidence/evidence-sufficiency-calc@v0.2.0"
+      - name: Run the live bridge tests
+        run: |
+          pytest tests/integration/test_sufficiency_live.py tests/unit/test_evidence_sufficiency.py -q
+
   lint:
     runs-on: ubuntu-latest
     steps:
