@@ -76,7 +76,11 @@ branch = true
 # --------------------------------------------------------------------------- #
 [tool.mypy]
 strict = true
-python_version = "3.11"
+# Type-checking target only; runtime support stays at requires-python >= 3.11.
+# numpy 2.5 ships stubs written with PEP 695 `type` statements, which mypy
+# refuses to parse at a target below 3.12. Python 3.11 remains covered by the
+# ruff target-version and by the CI test matrix.
+python_version = "3.12"
 warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true

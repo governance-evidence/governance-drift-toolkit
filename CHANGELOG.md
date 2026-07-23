@@ -23,6 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   human-readable `SUMMARY.md`, and a `RELEASE.md` recording release identity, environment, dataset
   access, and reproduction commands for the results shipped with this tag.
 
+### Changed
+
+- Raised the mypy type-checking target to Python 3.12. numpy 2.5 ships stubs written with PEP 695
+  `type` statements, which mypy refuses to parse at an older target, so `mypy src/` failed against a
+  fresh dependency resolution. Runtime support is unchanged (`requires-python >= 3.11`), and 3.11
+  stays covered by the ruff target version and the CI test matrix.
+
 ## [0.2.2] - 2026-06-13
 
 Zenodo release: [10.5281/zenodo.20673692](https://doi.org/10.5281/zenodo.20673692).
