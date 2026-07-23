@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-23
+
+### Fixed
+
+- Corrected the package version, which had stayed at `0.2.2` in `pyproject.toml` and
+  `drift.__version__` through the 0.3.0 tag. The 0.3.0 build therefore produced a 0.2.2 wheel and
+  PyPI rejected it as a duplicate, so 0.3.0 never reached PyPI. The library code, study entry point,
+  and published results are identical in 0.3.0 and 0.3.1, and the Zenodo archive of 0.3.0 remains a
+  valid snapshot of them.
+
 ## [0.3.0] - 2026-07-23
+
+Zenodo release: [10.5281/zenodo.21501897](https://doi.org/10.5281/zenodo.21501897).
 
 ### Added
 

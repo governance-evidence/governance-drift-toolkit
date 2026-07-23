@@ -7,11 +7,15 @@ results.
 | Field | Value |
 |---|---|
 | Repository | governance-drift-toolkit |
-| Release tag | v0.3.0 |
+| Release tag | v0.3.1 |
 | Concept DOI | [10.5281/zenodo.19236417](https://doi.org/10.5281/zenodo.19236417) (always resolves to the latest release) |
-| Version DOI | recorded in `CHANGELOG.md` under `[0.3.0]` once Zenodo mints it |
+| Version DOI | recorded in `CHANGELOG.md` under the matching release heading |
 | Entry point | `examples/ieee_cis_robustness.py` |
 | Companion entry point | `examples/ieee_cis_simulator_sensitivity.py` in evidence-sufficiency-calc v0.3.0 |
+
+The v0.3.0 tag ([10.5281/zenodo.21501897](https://doi.org/10.5281/zenodo.21501897)) contains
+identical study code and identical published results; it was superseded by v0.3.1 only to correct a
+stale package version string, so either archive reproduces the numbers below.
 
 ## Environment
 
