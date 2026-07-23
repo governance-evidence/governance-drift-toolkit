@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.1] - 2026-07-23
 
+Zenodo release: [10.5281/zenodo.21501987](https://doi.org/10.5281/zenodo.21501987).
+
 ### Fixed
 
 - Corrected the package version, which had stayed at `0.2.2` in `pyproject.toml` and

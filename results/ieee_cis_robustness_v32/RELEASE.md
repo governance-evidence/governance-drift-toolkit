@@ -9,7 +9,7 @@ results.
 | Repository | governance-drift-toolkit |
 | Release tag | v0.3.1 |
 | Concept DOI | [10.5281/zenodo.19236417](https://doi.org/10.5281/zenodo.19236417) (always resolves to the latest release) |
-| Version DOI | recorded in `CHANGELOG.md` under the matching release heading |
+| Version DOI | [10.5281/zenodo.21501987](https://doi.org/10.5281/zenodo.21501987) |
 | Entry point | `examples/ieee_cis_robustness.py` |
 | Companion entry point | `examples/ieee_cis_simulator_sensitivity.py` in evidence-sufficiency-calc v0.3.0 |
 
