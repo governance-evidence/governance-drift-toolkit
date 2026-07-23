@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-23
+
+### Added
+
+- `examples/ieee_cis_robustness.py`: a bounded, predefined robustness grid over the IEEE-CIS demo
+  covering evidence-dimension weights, operational thresholds, proxy-group and shared-component
+  ablations, window schemes (15-day, 45-day, and 30-day with 15-day stride), injection seeds, and a
+  second model class (`HistGradientBoostingClassifier`). Raw per-window signals are computed once per
+  window-scheme/model/seed configuration and stored, so every weight, threshold, and ablation variant
+  re-aggregates auditable inputs instead of recomputing them.
+- A reproduction guard in that runner: the base configuration must reproduce the published
+  `ieee_cis_demo.py` detection counts and final-window values before any variant is allowed to run.
+- `results/ieee_cis_robustness_v32/`: published signal tables, per-variant summary JSON, a
+  human-readable `SUMMARY.md`, and a `RELEASE.md` recording release identity, environment, dataset
+  access, and reproduction commands for the results shipped with this tag.
+
 ## [0.2.2] - 2026-06-13
 
 Zenodo release: [10.5281/zenodo.20673692](https://doi.org/10.5281/zenodo.20673692).

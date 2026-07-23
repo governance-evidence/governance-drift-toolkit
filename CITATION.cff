@@ -6,8 +6,8 @@ authors:
   - given-names: Oleg
     family-names: Solozobov
     orcid: "https://orcid.org/0009-0009-0105-7459"
-version: 0.2.2
-date-released: "2026-06-13"
+version: 0.3.0
+date-released: "2026-07-23"
 license: Apache-2.0
 doi: "10.5281/zenodo.20673692"  # v0.2.2 version DOI
 repository-code: "https://github.com/governance-evidence/governance-drift-toolkit"
