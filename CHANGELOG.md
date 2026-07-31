@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Fit median imputation statistics on the reference window of each window scheme and apply them
+  forward. They were previously fitted on the full 182-day span before the temporal split, which let
+  monitoring windows inform the values used to fit and calibrate the reference pipeline.
+- Estimate `ref_f1` by five-fold cross-fitting within the reference window instead of scoring the
+  fitted model on its own training records. The in-sample value is retained as `ref_f1_insample` and
+  is not used downstream.
+- Renamed `results/ieee_cis_robustness_v32/` to `results/ieee_cis_robustness/`. The directory no
+  longer encodes a manuscript revision; release identity is carried by `RELEASE.md` and the Zenodo
+  version DOI.
+- Refreshed the reproduction guard to the corrected demo baseline.
+
+### Added
+
+- `reference_medians` and `apply_medians` in `examples/ieee_cis_demo.py`, so an evaluation can fit
+  imputation on a chosen reference window and apply it forward.
+- `ref_f1_insample` in every signal table.
+
+### Fixed
+
+- Aggregate `with_cf_gap_mean` and `without_cf_gap_mean` as means of absolute per-window
+  differences. The signed mean let errors of opposite sign cancel.
+
+### Notes
+
+- All published result values changed; results produced against 0.3.1 no longer reproduce. The
+  separation boundary survives the correction: the headline 10/15 is unchanged and four low-signal
+  grid rows move down. Reference F1 falls from 0.133 to 0.126 for the logistic-regression reference
+  and from 0.228 to 0.171 for the gradient-boosting reference.
+
 ## [0.3.1] - 2026-07-23
 
 Zenodo release: [10.5281/zenodo.21501987](https://doi.org/10.5281/zenodo.21501987).

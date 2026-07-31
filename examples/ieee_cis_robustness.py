@@ -25,7 +25,7 @@ Run from the repository root::
 
     .venv/bin/python examples/ieee_cis_robustness.py
 
-Outputs JSON + markdown under results/ieee_cis_robustness_v32/.
+Outputs JSON + markdown under results/ieee_cis_robustness/.
 """
 
 from __future__ import annotations
@@ -50,7 +50,7 @@ from drift.monitors.uncertainty import (
     compute_prediction_entropy,
 )
 
-RESULTS_DIR = Path("results/ieee_cis_robustness_v32")
+RESULTS_DIR = Path("results/ieee_cis_robustness")
 
 BASE_WEIGHTS = {
     "completeness": 0.20,
@@ -115,6 +115,7 @@ class ConfigSignals:
     ref_txns: int
     ref_fraud_rate: float
     ref_f1: float
+    ref_f1_insample: float
     caps: dict[str, float]
     rows: list[WindowSignals] = field(default_factory=list)
 
@@ -150,6 +151,31 @@ def _make_model(model_class: str, seed: int):
     raise ValueError(msg)
 
 
+def _reference_f1(x_ref, y_ref, ref_probs, model_class: str) -> tuple[float, float]:
+    """Return (out-of-sample, in-sample) reference F1 for the reference window.
+
+    The out-of-sample value is obtained by five-fold cross-fitting within the
+    window. Scoring the fitted model on its own training records would be
+    resubstitution, not evidence of generalization; the in-sample value is
+    returned alongside it for disclosure only. The pipeline itself still uses
+    the full-window fit, which this function does not alter.
+    """
+    from sklearn.metrics import f1_score as sk_f1
+    from sklearn.model_selection import StratifiedKFold
+
+    insample = float(sk_f1(y_ref, (ref_probs > 0.5).astype(int)))
+
+    oof = np.zeros(len(y_ref), dtype=int)
+    for train_idx, test_idx in StratifiedKFold(n_splits=5, shuffle=False).split(x_ref, y_ref):
+        fold = _make_model(model_class, 42)
+        fold.fit(x_ref[train_idx], y_ref[train_idx])
+        oof[test_idx] = (fold.predict_proba(x_ref[test_idx])[:, 1] > 0.5).astype(int)
+    out_of_sample = float(sk_f1(y_ref, oof))
+
+    print(f"  ref_f1 out-of-sample={out_of_sample:.3f} (in-sample={insample:.3f})")
+    return out_of_sample, insample
+
+
 def compute_config_signals(
     df,
     config_id: str,
@@ -166,6 +192,14 @@ def compute_config_signals(
 
     cols = demo.FEATURE_COLS
     windows = _split_windows_scheme(df, window_days, stride_days)
+
+    # Impute from this scheme's own reference window forward, so that no
+    # monitoring window informs the values used to fit and calibrate the
+    # reference pipeline. Each scheme has a different window 0, so the
+    # statistics are fitted per scheme rather than once for all schemes.
+    medians = demo.reference_medians(windows[0][1], window_days)
+    windows = [(start, demo.apply_medians(wdf, medians)) for start, wdf in windows]
+
     _ref_start, ref_df = windows[0]
     monitored = windows[1:]
 
@@ -176,8 +210,8 @@ def compute_config_signals(
     model.fit(x_ref, y_ref)
 
     ref_probs = model.predict_proba(x_ref)[:, 1]
-    ref_preds = (ref_probs > 0.5).astype(int)
-    ref_f1 = float(sk_f1(y_ref, ref_preds))
+    ref_f1, ref_f1_insample = _reference_f1(x_ref, y_ref, ref_probs, model_class)
+
     ref_features = x_ref.astype(np.float64)
     ref_entropy = compute_prediction_entropy(ref_probs).statistic
 
@@ -216,6 +250,7 @@ def compute_config_signals(
         ref_txns=len(ref_df),
         ref_fraud_rate=float(y_ref.mean()),
         ref_f1=ref_f1,
+        ref_f1_insample=ref_f1_insample,
         caps=caps,
     )
 
@@ -445,8 +480,8 @@ def run_grid(configs: dict[str, ConfigSignals]) -> dict:
         a2 = np.array([r["s_proxy"] for r in without_cf[cond]])
         b2 = np.array([r["s_actual"] for r in without_cf[cond]])
         corr[cond] = {
-            "with_cf_gap_mean": round(float(np.mean(a - b)), 3),
-            "without_cf_gap_mean": round(float(np.mean(a2 - b2)), 3),
+            "with_cf_gap_mean": round(float(np.mean(np.abs(a - b))), 3),
+            "without_cf_gap_mean": round(float(np.mean(np.abs(a2 - b2))), 3),
             "with_cf_corr": round(float(np.corrcoef(a, b)[0, 1]), 3),
             "without_cf_corr": round(float(np.corrcoef(a2, b2)[0, 1]), 3),
         }
@@ -469,12 +504,14 @@ def run_grid(configs: dict[str, ConfigSignals]) -> dict:
         cfg = configs[key]
         results[rid] = {
             "ref_f1": round(cfg.ref_f1, 3),
+            "ref_f1_insample": round(cfg.ref_f1_insample, 3),
             "caps": {k: round(v, 3) for k, v in cfg.caps.items()},
             "n_windows_monitored": cfg.n_windows_monitored,
             "summary": detection_summary(aggregate(cfg)),
         }
     results["R7_seed_42"] = {
         "ref_f1": round(base.ref_f1, 3),
+        "ref_f1_insample": round(base.ref_f1_insample, 3),
         "summary": detection_summary(aggregate(base)),
     }
     return results
@@ -482,7 +519,8 @@ def run_grid(configs: dict[str, ConfigSignals]) -> dict:
 
 def main() -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    df = demo._load_data()
+    # Raw: each configuration imputes from its own reference window forward.
+    df = demo._load_raw()
 
     config_specs = [
         ("base_30d_logreg_s42", "base_30d", 30, 30, "logreg", 42),
@@ -509,12 +547,15 @@ def main() -> None:
             flush=True,
         )
 
-    # Reproduction guard: base config must match frozen v31 headline numbers.
+    # Reproduction guard: base config must match the demo's headline numbers.
+    # Refreshed when imputation moved from full-span medians to reference-window
+    # medians applied forward; the previous frozen values were produced under the
+    # leaky procedure and no longer describe this pipeline.
     base_summary = detection_summary(aggregate(configs["base_30d_logreg_s42"]))
     expected = {
-        "covariate": (5, 0.105, 0.121),
-        "mixed": (5, 0.159, 0.037),
-        "concept": (0, 0.294, 0.008),
+        "covariate": (5, 0.131, 0.120),
+        "mixed": (5, 0.184, 0.035),
+        "concept": (0, 0.296, 0.007),
     }
     for cond, (det, s_prx, s_act) in expected.items():
         got = base_summary["conditions"][cond]

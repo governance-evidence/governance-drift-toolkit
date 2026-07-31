@@ -7,15 +7,16 @@ results.
 | Field | Value |
 |---|---|
 | Repository | governance-drift-toolkit |
-| Release tag | v0.3.1 |
+| Release tag | v0.4.0 |
 | Concept DOI | [10.5281/zenodo.19236417](https://doi.org/10.5281/zenodo.19236417) (always resolves to the latest release) |
-| Version DOI | [10.5281/zenodo.21501987](https://doi.org/10.5281/zenodo.21501987) |
+| Version DOI | pending; recorded once the Zenodo archive for this tag is minted |
 | Entry point | `examples/ieee_cis_robustness.py` |
-| Companion entry point | `examples/ieee_cis_simulator_sensitivity.py` in evidence-sufficiency-calc v0.3.0 |
+| Companion entry point | `examples/ieee_cis_simulator_sensitivity.py` in evidence-sufficiency-calc v0.4.0 |
 
-The v0.3.0 tag ([10.5281/zenodo.21501897](https://doi.org/10.5281/zenodo.21501897)) contains
-identical study code and identical published results; it was superseded by v0.3.1 only to correct a
-stale package version string, so either archive reproduces the numbers below.
+The v0.3.0 and v0.3.1 archives do not reproduce the numbers below. Both were produced before
+imputation statistics were fitted on the reference window and before reference F1 was estimated
+out-of-sample, so their results reflect a calibration that used future-window information. Cite
+this tag for the values in this directory.
 
 ## Environment
 

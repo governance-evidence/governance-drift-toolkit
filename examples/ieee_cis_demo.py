@@ -133,8 +133,8 @@ MIXED_FLIP_RATES = [0.05, 0.15, 0.30, 0.50, 0.70]  # fraud labels flipped to leg
 # ---------------------------------------------------------------------------
 
 
-def _load_data() -> pd.DataFrame:
-    """Load and prepare IEEE-CIS transaction data."""
+def _load_raw() -> pd.DataFrame:
+    """Load IEEE-CIS transaction data without imputing missing values."""
     import pandas as pd
 
     if not DATA_PATH.exists():
@@ -150,10 +150,31 @@ def _load_data() -> pd.DataFrame:
     df["day"] = (df["TransactionDT"] - df["TransactionDT"].min()) // SECONDS_PER_DAY
     print(f"  Span: {int(df['day'].max()) + 1} days")
 
-    for col in FEATURE_COLS:
-        df[col] = df[col].fillna(df[col].median())
-
     return df
+
+
+def reference_medians(df: pd.DataFrame, ref_days: int) -> dict[str, float]:
+    """Fit median imputation statistics on the reference window only.
+
+    Fitting them on the full span would let later monitoring windows influence
+    the values used to train and calibrate the reference pipeline, which is
+    temporal look-ahead.
+    """
+    ref = df[df["day"] < ref_days]
+    return {col: float(ref[col].median()) for col in FEATURE_COLS}
+
+
+def apply_medians(df: pd.DataFrame, medians: dict[str, float]) -> pd.DataFrame:
+    """Apply reference-window imputation statistics forward, in place."""
+    for col in FEATURE_COLS:
+        df[col] = df[col].fillna(medians[col])
+    return df
+
+
+def _load_data() -> pd.DataFrame:
+    """Load IEEE-CIS data and impute from the reference window forward."""
+    df = _load_raw()
+    return apply_medians(df, reference_medians(df, WINDOW_DAYS))
 
 
 def _split_windows(df: pd.DataFrame) -> list[pd.DataFrame]:
