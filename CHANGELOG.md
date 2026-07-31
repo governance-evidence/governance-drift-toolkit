@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-31
+
+Zenodo release: [10.5281/zenodo.21717036](https://doi.org/10.5281/zenodo.21717036).
+
 ### Changed
 
 - Fit median imputation statistics on the reference window of each window scheme and apply them
