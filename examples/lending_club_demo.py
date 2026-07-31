@@ -186,6 +186,7 @@ _WIDTH = 115
 def _run_scenario(
     scenario_key: str,
     title: str,
+    *,
     windows: list[pd.DataFrame],
     window_labels: list[str],
     model: object,
@@ -509,13 +510,13 @@ def main() -> None:
         rows = _run_scenario(
             scenario_key,
             title,
-            windows,
-            labels,
-            model,
-            scaler,
-            ref_probs,
-            ref_features,
-            fn,
+            windows=windows,
+            window_labels=labels,
+            model=model,
+            scaler=scaler,
+            ref_probs=ref_probs,
+            ref_features=ref_features,
+            inject_fn=fn,
         )
         all_rows.extend(rows)
 

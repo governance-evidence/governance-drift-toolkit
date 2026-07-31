@@ -394,6 +394,7 @@ def _compute_evidence_sufficiency(
 def _monitor_window(
     win_df: pd.DataFrame,
     ref_df: pd.DataFrame,
+    *,
     model: LogisticRegression,
     scaler: StandardScaler,
     ref_probs: NDArray[np.floating],
@@ -491,6 +492,7 @@ def _monitor_window(
 
 def _run_scenario(
     title: str,
+    *,
     windows: list[pd.DataFrame],
     model: LogisticRegression,
     scaler: StandardScaler,
@@ -524,13 +526,13 @@ def _run_scenario(
         row = _monitor_window(
             current_df,
             windows[0],
-            model,
-            scaler,
-            ref_probs,
-            ref_features,
-            ref_entropy,
-            i,
-            caps,
+            model=model,
+            scaler=scaler,
+            ref_probs=ref_probs,
+            ref_features=ref_features,
+            ref_entropy=ref_entropy,
+            window_idx=i,
+            caps=caps,
         )
         rows.append(row)
     return rows
