@@ -151,25 +151,39 @@ def _make_model(model_class: str, seed: int):
     raise ValueError(msg)
 
 
-def _reference_f1(x_ref, y_ref, ref_probs, model_class: str) -> tuple[float, float]:
+def _reference_f1(raw_ref, y_ref, ref_probs, model_class: str) -> tuple[float, float]:
     """Return (out-of-sample, in-sample) reference F1 for the reference window.
 
-    The out-of-sample value is obtained by five-fold cross-fitting within the
-    window. Scoring the fitted model on its own training records would be
-    resubstitution, not evidence of generalization; the in-sample value is
-    returned alongside it for disclosure only. The pipeline itself still uses
-    the full-window fit, which this function does not alter.
+    The out-of-sample value cross-fits the whole reference pipeline, not only
+    the classifier: median imputation, scaling and the model are refitted inside
+    every fold, so a held-out record contributes to none of them. Cross-fitting
+    the classifier alone would leave the imputation medians and the scaler's
+    mean and variance estimated over records the fold is scored on, which is the
+    same leakage one level down.
+
+    The in-sample value is returned alongside for disclosure only. The pipeline
+    the monitoring itself uses is still the full-window fit, which this function
+    does not alter.
     """
+    from sklearn.impute import SimpleImputer
     from sklearn.metrics import f1_score as sk_f1
     from sklearn.model_selection import StratifiedKFold
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
 
     insample = float(sk_f1(y_ref, (ref_probs > 0.5).astype(int)))
 
     oof = np.zeros(len(y_ref), dtype=int)
-    for train_idx, test_idx in StratifiedKFold(n_splits=5, shuffle=False).split(x_ref, y_ref):
-        fold = _make_model(model_class, 42)
-        fold.fit(x_ref[train_idx], y_ref[train_idx])
-        oof[test_idx] = (fold.predict_proba(x_ref[test_idx])[:, 1] > 0.5).astype(int)
+    for train_idx, test_idx in StratifiedKFold(n_splits=5, shuffle=False).split(raw_ref, y_ref):
+        fold = Pipeline(
+            [
+                ("impute", SimpleImputer(strategy="median")),
+                ("scale", StandardScaler()),
+                ("model", _make_model(model_class, 42)),
+            ]
+        )
+        fold.fit(raw_ref[train_idx], y_ref[train_idx])
+        oof[test_idx] = (fold.predict_proba(raw_ref[test_idx])[:, 1] > 0.5).astype(int)
     out_of_sample = float(sk_f1(y_ref, oof))
 
     print(f"  ref_f1 out-of-sample={out_of_sample:.3f} (in-sample={insample:.3f})")
@@ -198,6 +212,9 @@ def compute_config_signals(
     # reference pipeline. Each scheme has a different window 0, so the
     # statistics are fitted per scheme rather than once for all schemes.
     medians = demo.reference_medians(windows[0][1], window_days)
+    # Unimputed reference features, kept so the cross-fitted estimate can refit
+    # imputation inside each fold rather than inheriting window-wide medians.
+    raw_ref = windows[0][1][cols].to_numpy(dtype=float, copy=True)
     windows = [(start, demo.apply_medians(wdf, medians)) for start, wdf in windows]
 
     _ref_start, ref_df = windows[0]
@@ -210,7 +227,7 @@ def compute_config_signals(
     model.fit(x_ref, y_ref)
 
     ref_probs = model.predict_proba(x_ref)[:, 1]
-    ref_f1, ref_f1_insample = _reference_f1(x_ref, y_ref, ref_probs, model_class)
+    ref_f1, ref_f1_insample = _reference_f1(raw_ref, y_ref, ref_probs, model_class)
 
     ref_features = x_ref.astype(np.float64)
     ref_entropy = compute_prediction_entropy(ref_probs).statistic
@@ -260,7 +277,7 @@ def compute_config_signals(
         inject = INJECTORS[scenario]
         rng = np.random.default_rng(seed)
         for i, (start_day, raw_df) in enumerate(monitored, start=1):
-            cur_df = inject(raw_df, i - 1, rng) if inject is not None else raw_df
+            cur_df = inject(raw_df, start_day, rng) if inject is not None else raw_df
 
             x_cur = scaler.transform(cur_df[cols].values)
             cur_probs = model.predict_proba(x_cur)[:, 1]

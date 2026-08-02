@@ -2,7 +2,7 @@
  "environment": {
   "python": "3.14.5",
   "command": ".venv/bin/python examples/ieee_cis_robustness.py",
-  "git_head": "eebc76e",
+  "git_head": "5207789",
   "seeds": {
    "model_fit": 42,
    "injection": [
@@ -814,16 +814,16 @@
      "mixed": {
       "windows": 11,
       "detected": 11,
-      "s_proxy_last": 0.119,
-      "s_actual_last": 0.047,
-      "proxy_actual_gap_last": 0.071
+      "s_proxy_last": 0.116,
+      "s_actual_last": 0.046,
+      "proxy_actual_gap_last": 0.07
      },
      "concept": {
       "windows": 11,
       "detected": 0,
       "s_proxy_last": 0.214,
-      "s_actual_last": 0.012,
-      "proxy_actual_gap_last": 0.202
+      "s_actual_last": 0.009,
+      "proxy_actual_gap_last": 0.205
      }
     },
     "baseline_s_proxy_last": 0.214,
@@ -835,7 +835,7 @@
    }
   },
   "R5_window_45d": {
-   "ref_f1": 0.132,
+   "ref_f1": 0.131,
    "ref_f1_insample": 0.145,
    "caps": {
     "psi": 0.693,
@@ -850,23 +850,23 @@
      "covariate": {
       "windows": 3,
       "detected": 2,
-      "s_proxy_last": 0.335,
-      "s_actual_last": 0.211,
-      "proxy_actual_gap_last": 0.124
+      "s_proxy_last": 0.312,
+      "s_actual_last": 0.184,
+      "proxy_actual_gap_last": 0.128
      },
      "mixed": {
       "windows": 3,
       "detected": 2,
-      "s_proxy_last": 0.342,
-      "s_actual_last": 0.153,
-      "proxy_actual_gap_last": 0.189
+      "s_proxy_last": 0.328,
+      "s_actual_last": 0.077,
+      "proxy_actual_gap_last": 0.25
      },
      "concept": {
       "windows": 3,
       "detected": 0,
       "s_proxy_last": 0.412,
-      "s_actual_last": 0.124,
-      "proxy_actual_gap_last": 0.288
+      "s_actual_last": 0.032,
+      "proxy_actual_gap_last": 0.38
      }
     },
     "baseline_s_proxy_last": 0.412,
@@ -900,15 +900,15 @@
      "mixed": {
       "windows": 10,
       "detected": 10,
-      "s_proxy_last": 0.187,
-      "s_actual_last": 0.039,
-      "proxy_actual_gap_last": 0.148
+      "s_proxy_last": 0.183,
+      "s_actual_last": 0.04,
+      "proxy_actual_gap_last": 0.143
      },
      "concept": {
       "windows": 10,
       "detected": 0,
       "s_proxy_last": 0.296,
-      "s_actual_last": 0.008,
+      "s_actual_last": 0.007,
       "proxy_actual_gap_last": 0.288
      }
     },

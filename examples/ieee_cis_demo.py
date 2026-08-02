@@ -3,9 +3,18 @@
 Runs four evaluation scenarios on real IEEE-CIS transaction data:
 
 1. **Baseline** — no injection, natural dataset stability
-2. **Covariate drift P(X)** — feature distributions shift, P(Y|X) stable
-3. **Mixed drift P(X)+P(Y|X)** — features shift AND fraud patterns change
-4. **Pure concept drift P(Y|X)** — P(X) stable, fraud labels flip
+2. **Feature perturbation** — Gaussian noise is added to selected observed
+   features while labels stay attached to their original records
+3. **Mixed** — features are perturbed and fraud labels are flipped
+4. **Concept plus prior** — labels are flipped, feature records untouched
+
+The condition names deliberately avoid the textbook drift vocabulary. Adding
+noise to observed features while holding the label fixed does not preserve the
+conditional relationship between the observed features and the label, so
+condition 2 is not a pure covariate shift. Flipping fraud labels to legitimate
+changes the class prior as well as the conditional, so condition 4 is not pure
+concept drift. The accompanying manuscript states both points; this module is
+the implementation those statements describe.
 
 Scenarios 2-4 use controlled drift injection (standard methodology in
 drift detection research: Rabanser et al. NeurIPS 2019, Lu et al. ACM
@@ -118,14 +127,34 @@ FEATURE_COLS = [
     "V315",
 ]
 
-# Drift injection parameters — progressive per window
+# Drift injection parameters, scheduled by calendar day.
+#
+# Magnitude is a function of the day a window starts, not of its index in the
+# window sequence. Indexing by window number made the injected process depend
+# on the window scheme: a 45-day scheme saw only the first three magnitudes
+# while a 15-day scheme reached the last one twice as early in calendar time,
+# which confounded window geometry with perturbation strength. The anchors
+# below are the values the 30-day base scheme used, at the days its monitored
+# windows start, so that scheme reproduces its previous trajectory exactly.
 COVARIATE_SHIFT_FEATURES = ["TransactionAmt", "V1", "V3"]
-COVARIATE_SHIFT_SIGMAS = [0.3, 0.6, 1.0, 1.5, 2.0]  # per window
+COVARIATE_SHIFT_SCHEDULE = [(30, 0.3), (60, 0.6), (90, 1.0), (120, 1.5), (150, 2.0)]
 
-CONCEPT_FLIP_RATES = [0.10, 0.25, 0.50, 0.75, 0.95]  # fraction of fraud labels flipped to legit
+# fraction of fraud labels flipped to legit
+CONCEPT_FLIP_SCHEDULE = [(30, 0.10), (60, 0.25), (90, 0.50), (120, 0.75), (150, 0.95)]
 
-MIXED_SHIFT_SIGMAS = [0.2, 0.4, 0.7, 1.0, 1.5]
-MIXED_FLIP_RATES = [0.05, 0.15, 0.30, 0.50, 0.70]  # fraud labels flipped to legit
+MIXED_SHIFT_SCHEDULE = [(30, 0.2), (60, 0.4), (90, 0.7), (120, 1.0), (150, 1.5)]
+MIXED_FLIP_SCHEDULE = [(30, 0.05), (60, 0.15), (90, 0.30), (120, 0.50), (150, 0.70)]
+
+
+def scheduled_magnitude(schedule: list[tuple[int, float]], start_day: int) -> float:
+    """Perturbation magnitude at a window's start day, clamped at both ends."""
+    days = [d for d, _ in schedule]
+    values = [v for _, v in schedule]
+    if start_day <= days[0]:
+        return values[0]
+    if start_day >= days[-1]:
+        return values[-1]
+    return float(np.interp(start_day, days, values))
 
 
 # ---------------------------------------------------------------------------
@@ -221,17 +250,19 @@ def _train_reference_model(
 
 def _inject_covariate_drift(
     df: pd.DataFrame,
-    window_idx: int,
+    start_day: int,
     rng: np.random.Generator,
 ) -> pd.DataFrame:
-    """Shift selected feature distributions (P(X) changes, P(Y|X) stable).
+    """Perturb selected observed features, leaving labels attached as they are.
 
-    Adds Gaussian noise scaled by window index to selected features.
-    Labels remain unchanged — the fraud pattern is the same, just the
-    input distribution shifts.
+    Adds Gaussian noise scaled by the window's start day to selected features.
+    No label is edited, but this is not a pure covariate shift: the noise moves
+    the observed features away from the values the label was generated with, so
+    the conditional distribution of the label given the observed features
+    changes even though the label column does not.
     """
     out = df.copy()
-    sigma = COVARIATE_SHIFT_SIGMAS[min(window_idx, len(COVARIATE_SHIFT_SIGMAS) - 1)]
+    sigma = scheduled_magnitude(COVARIATE_SHIFT_SCHEDULE, start_day)
     for col in COVARIATE_SHIFT_FEATURES:
         col_std = out[col].std()
         out[col] = out[col] + rng.normal(0, sigma * col_std, size=len(out))
@@ -240,7 +271,7 @@ def _inject_covariate_drift(
 
 def _inject_concept_drift(
     df: pd.DataFrame,
-    window_idx: int,
+    start_day: int,
     rng: np.random.Generator,
 ) -> pd.DataFrame:
     """Flip fraud→legit labels without changing features (pure P(Y|X) drift).
@@ -251,7 +282,7 @@ def _inject_concept_drift(
     so P(X) remains identical — unsupervised monitors should NOT detect this.
     """
     out = df.copy()
-    flip_rate = CONCEPT_FLIP_RATES[min(window_idx, len(CONCEPT_FLIP_RATES) - 1)]
+    flip_rate = scheduled_magnitude(CONCEPT_FLIP_SCHEDULE, start_day)
     fraud_idx = out[out["isFraud"] == 1].index
     n_flip = min(int(len(fraud_idx) * flip_rate), len(fraud_idx))
     flip_idx = rng.choice(fraud_idx, size=n_flip, replace=False)
@@ -261,7 +292,7 @@ def _inject_concept_drift(
 
 def _inject_mixed_drift(
     df: pd.DataFrame,
-    window_idx: int,
+    start_day: int,
     rng: np.random.Generator,
 ) -> pd.DataFrame:
     """Shift features AND flip labels (combined P(X) + P(Y|X) drift).
@@ -272,12 +303,12 @@ def _inject_mixed_drift(
     """
     out = df.copy()
     # Feature shift
-    sigma = MIXED_SHIFT_SIGMAS[min(window_idx, len(MIXED_SHIFT_SIGMAS) - 1)]
+    sigma = scheduled_magnitude(MIXED_SHIFT_SCHEDULE, start_day)
     for col in COVARIATE_SHIFT_FEATURES:
         col_std = out[col].std()
         out[col] = out[col] + rng.normal(0, sigma * col_std, size=len(out))
     # Label flip (one-directional: fraud→legit)
-    flip_rate = MIXED_FLIP_RATES[min(window_idx, len(MIXED_FLIP_RATES) - 1)]
+    flip_rate = scheduled_magnitude(MIXED_FLIP_SCHEDULE, start_day)
     fraud_idx = out[out["isFraud"] == 1].index
     n_flip = min(int(len(fraud_idx) * flip_rate), len(fraud_idx))
     flip_idx = rng.choice(fraud_idx, size=n_flip, replace=False)
@@ -522,7 +553,9 @@ def _run_scenario(
 
     rows: list[dict] = []
     for i, raw_df in enumerate(windows[1:], start=1):
-        current_df = inject_fn(raw_df, i - 1, rng) if inject_fn is not None else raw_df
+        current_df = (
+            inject_fn(raw_df, int(raw_df["day"].min()), rng) if inject_fn is not None else raw_df
+        )
         row = _monitor_window(
             current_df,
             windows[0],
@@ -610,9 +643,9 @@ def main() -> None:
     baseline_max = max(baseline_s) if baseline_s else 1.0
     for name, label in [
         ("baseline", "Baseline"),
-        ("covariate", "Covariate P(X)"),
-        ("mixed", "Mixed P(X)+P(Y|X)"),
-        ("concept", "Pure P(Y|X)"),
+        ("covariate", "Feature perturbation"),
+        ("mixed", "Mixed"),
+        ("concept", "Concept plus prior"),
     ]:
         rows = all_results[name]
         last_s = rows[-1]["s_proxy"] if rows else 0
@@ -625,12 +658,12 @@ def main() -> None:
         )
 
     print()
-    print("  Condition 1 (Covariate P(X)):       DETECTABLE  — P_feat drops, S_proxy diverges")
-    print("  Condition 2 (Mixed P(X)+P(Y|X)):     DETECTABLE  — multiple proxies degrade")
-    print(
-        "  Condition 3 (Pure P(Y|X)):            UNDETECTABLE — proxies unchanged, S_proxy = baseline"
-    )
-    print("  This confirms the irreducible governance risk of proxy-based monitoring.")
+    print("  Condition 1 (Feature perturbation):  SEPARATES   — P_feat drops, S_proxy diverges")
+    print("  Condition 2 (Mixed):                 SEPARATES   — multiple proxies degrade")
+    print("  Condition 3 (Concept plus prior):     NO SEPARATION — every proxy input is unchanged")
+    print("  Condition 3 could not have come out otherwise: the injector edits labels only,")
+    print("  and every quantity entering S_proxy is a function of the untouched feature")
+    print("  records and the fixed model. It is an implementation check, not a measurement.")
 
 
 if __name__ == "__main__":

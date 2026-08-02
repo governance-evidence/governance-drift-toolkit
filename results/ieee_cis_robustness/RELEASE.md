@@ -7,11 +7,11 @@ results.
 | Field | Value |
 |---|---|
 | Repository | governance-drift-toolkit |
-| Release tag | v0.4.0 |
+| Release tag | v0.5.0 |
 | Concept DOI | [10.5281/zenodo.19236417](https://doi.org/10.5281/zenodo.19236417) (always resolves to the latest release) |
-| Version DOI | [10.5281/zenodo.21717036](https://doi.org/10.5281/zenodo.21717036) |
+| Version DOI | pending; recorded once the Zenodo archive for this tag is minted |
 | Entry point | `examples/ieee_cis_robustness.py` |
-| Companion entry point | `examples/ieee_cis_simulator_sensitivity.py` in evidence-sufficiency-calc v0.4.0 |
+| Companion entry point | `examples/ieee_cis_simulator_sensitivity.py` in evidence-sufficiency-calc v0.4.0 or later |
 
 The v0.3.0 and v0.3.1 archives do not reproduce the numbers below. Both were produced before
 imputation statistics were fitted on the reference window and before reference F1 was estimated
@@ -21,7 +21,7 @@ this tag for the values in this directory.
 ## Environment
 
 Python 3.14.5, numpy 2.4.3, pandas 2.3.3, scikit-learn 1.8.0, scipy 1.17.1,
-drift 0.2.2 (this package at the parent release).
+drift 0.5.0 (this package at this release).
 
 ## Data
 

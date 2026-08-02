@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-02
+
+### Changed
+
+- Schedule perturbation magnitude by calendar day instead of by window index.
+  Indexing by window number made the injected process depend on the window
+  scheme: the 45-day scheme reached only the third magnitude while the 15-day
+  scheme reached the last one twice as early in calendar time, so window
+  geometry was confounded with perturbation strength. The anchors reproduce the
+  30-day base scheme exactly, and its published values are unchanged.
+- Cross-fit the whole reference pipeline when estimating reference F1. Median
+  imputation and scaling were previously fitted over the entire reference window
+  before the folds, so a held-out record contributed to the statistics used to
+  score it. Imputation, scaling and the classifier are now refitted inside each
+  fold. The estimates move by at most 0.001.
+- Correct the condition documentation to match the accompanying manuscript. The
+  feature-perturbation condition is no longer described as preserving the
+  conditional, and the label-flip condition is no longer called pure concept
+  drift; the summary output states that its zero separation follows from the
+  construction.
+
+### Notes
+
+- Package metadata is realigned. The v0.4.0 tag carried `version = "0.3.1"`,
+  left its changes under `Unreleased`, and shipped a release record naming
+  drift 0.2.2. Nothing in that tag is mutated; this release supersedes it as
+  the reproducing archive.
+- Published result values are unchanged from v0.4.0 apart from the 45-day
+  scheme's reference F1, which moves from 0.132 to 0.131.
+
 ## [0.4.0] - 2026-07-31
 
 Zenodo release: [10.5281/zenodo.21717036](https://doi.org/10.5281/zenodo.21717036).
@@ -38,9 +68,10 @@ Zenodo release: [10.5281/zenodo.21717036](https://doi.org/10.5281/zenodo.2171703
 ### Notes
 
 - All published result values changed; results produced against 0.3.1 no longer reproduce. The
-  separation boundary survives the correction: the headline 10/15 is unchanged and four low-signal
-  grid rows move down. Reference F1 falls from 0.133 to 0.126 for the logistic-regression reference
-  and from 0.228 to 0.171 for the gradient-boosting reference.
+  separation boundary survives the correction: the headline separation over the two empirical
+  conditions is unchanged and four low-signal grid rows move down. Reference F1 falls from 0.133 to
+  0.126 for the logistic-regression reference and from 0.228 to 0.171 for the gradient-boosting
+  reference.
 
 ## [0.3.1] - 2026-07-23
 

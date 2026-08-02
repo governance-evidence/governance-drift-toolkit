@@ -8,7 +8,7 @@
  "n_windows_monitored": 5,
  "ref_txns": 134339,
  "ref_fraud_rate": 0.025316549922211717,
- "ref_f1": 0.1261443347996671,
+ "ref_f1": 0.1256905256905257,
  "ref_f1_insample": 0.1298264257881686,
  "caps": {
   "psi": 0.5,
