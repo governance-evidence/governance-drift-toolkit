@@ -18,6 +18,15 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+      - name: Check the tag matches the declared version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          declared=$(python -c "import tomllib,pathlib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          if [ "$tag" != "$declared" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} carries version ${tag}, pyproject.toml declares ${declared}. Bump the declared version and retag."
+            exit 1
+          fi
+          echo "tag ${GITHUB_REF_NAME} matches declared version ${declared}"
       - name: Install build tools
         run: pip install build
       - name: Build sdist and wheel

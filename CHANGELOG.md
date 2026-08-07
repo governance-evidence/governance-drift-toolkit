@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Corrected the package version, which stayed at `0.5.0` through the 0.5.1 tag,
+  so the release built a 0.5.0 wheel and PyPI rejected it as a duplicate. This
+  is the second occurrence: the same thing happened at the 0.3.0 tag and was
+  fixed by editing the number rather than the mechanism that let it drift.
+- The version now lives in `pyproject.toml` alone. `drift.__version__` derives
+  from installed metadata, so the two can no longer disagree, and the package
+  test compares the installed version against the declared one instead of
+  against itself.
+- The release workflow refuses to build when the tag and the declared version
+  disagree, naming both. The failure now arrives in seconds from this
+  repository rather than as a `400 File already exists` from PyPI after a
+  successful build.
+
 - `results/ieee_cis_robustness/SUMMARY.md` is rebuilt from the current result
   JSON. It had been written by hand and fell two releases behind: its simulator
   checkpoints were pre-reseed values that no longer match the accompanying

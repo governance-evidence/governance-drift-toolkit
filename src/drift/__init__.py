@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version as _metadata_version
+
 from drift.composite import compute_composite_alert
 from drift.config import credit_scoring_config, default_config, fraud_detection_config
 from drift.harmful_shift import apply_suppression, is_harmful_shift
@@ -24,7 +26,10 @@ from drift.types import (
     ResponseAction,
 )
 
-__version__ = "0.5.0"
+# Single source of truth: the version lives in pyproject.toml alone. Keeping a
+# literal here let it drift from the packaged version twice — at the 0.3.0 tag
+# and again at 0.5.1 — and each time PyPI rejected the upload as a duplicate.
+__version__ = _metadata_version("governance-drift-toolkit")
 
 __all__ = [
     "AlertSeverity",
