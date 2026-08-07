@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Citation metadata names the released version. `version` had frozen at 0.3.1
+  while 0.4.0, 0.5.0, 0.5.1, and 0.5.2 shipped, so four archives claim to be a
+  release from July. The root `doi` now carries the concept DOI rather than a
+  version DOI: it resolves to the latest release and is correct at the moment
+  the tag is cut, where a version DOI cannot be, since Zenodo mints it from the
+  archive that would have to contain it.
+- The release workflow checks `CITATION.cff` alongside `pyproject.toml`.
+  `results/ieee_cis_robustness/RELEASE.md` is deliberately excluded: its release
+  tag names the version that generated those files, not the version being cut.
+
+## [0.5.2] - 2026-08-07
+
+### Fixed
+
 - Corrected the package version, which stayed at `0.5.0` through the 0.5.1 tag,
   so the release built a 0.5.0 wheel and PyPI rejected it as a duplicate. This
   is the second occurrence: the same thing happened at the 0.3.0 tag and was
@@ -21,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   disagree, naming both. The failure now arrives in seconds from this
   repository rather than as a `400 File already exists` from PyPI after a
   successful build.
+
+## [0.5.1] - 2026-08-07
+
+### Fixed
 
 - `results/ieee_cis_robustness/SUMMARY.md` is rebuilt from the current result
   JSON. It had been written by hand and fell two releases behind: its simulator

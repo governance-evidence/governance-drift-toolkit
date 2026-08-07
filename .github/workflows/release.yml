@@ -18,15 +18,25 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+      # results/ieee_cis_robustness/RELEASE.md is deliberately absent from this
+      # list. Its release tag names the version that generated those files, not
+      # the version being cut, and later releases only reproduce them.
       - name: Check the tag matches the declared version
         run: |
           tag="${GITHUB_REF_NAME#v}"
           declared=$(python -c "import tomllib,pathlib;print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
-          if [ "$tag" != "$declared" ]; then
-            echo "::error::tag ${GITHUB_REF_NAME} carries version ${tag}, pyproject.toml declares ${declared}. Bump the declared version and retag."
-            exit 1
-          fi
-          echo "tag ${GITHUB_REF_NAME} matches declared version ${declared}"
+          cited=$(python -c "import re,pathlib;print(re.search(r'^version: *(\S+)',pathlib.Path('CITATION.cff').read_text(),re.M)[1])")
+          failed=0
+          for record in "pyproject.toml=$declared" "CITATION.cff=$cited"; do
+            file="${record%%=*}"
+            found="${record#*=}"
+            if [ "$found" != "$tag" ]; then
+              echo "::error file=${file}::tag ${GITHUB_REF_NAME} releases ${tag}, ${file} declares ${found}. Update it and retag."
+              failed=1
+            fi
+          done
+          [ "$failed" -eq 0 ] || exit 1
+          echo "tag ${GITHUB_REF_NAME} matches pyproject.toml and CITATION.cff"
       - name: Install build tools
         run: pip install build
       - name: Build sdist and wheel
