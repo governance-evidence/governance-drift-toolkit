@@ -7,7 +7,7 @@ then computes S_proxy(t) using the Evidence Sufficiency Calculator formula:
 
 where C and F are deterministic (observed directly from system metadata
 and timestamps), and R_proxy and P_proxy are estimated from proxy
-monitor signals via the coverage matrix (Table 6).
+monitor signals via the coverage matrix (Table 2 of the accompanying manuscript).
 
 Dimension estimation per Section 4.4:
 
@@ -30,7 +30,8 @@ if TYPE_CHECKING:
 
 
 # ---------------------------------------------------------------------------
-# Coverage matrix (Table 6) — which categories estimate which dimensions
+# Coverage matrix (Table 2 of the accompanying manuscript) — which
+# categories estimate which dimensions
 # ---------------------------------------------------------------------------
 
 # Weights: Strong=1.0, Moderate=0.5, Weak=0.25, None=0 (absent)
@@ -101,8 +102,10 @@ def normalize_proxy(raw_stat: float, cap: float) -> float:
     raw_stat : float
         Raw divergence metric (e.g., PSI, KS statistic). Higher = worse.
     cap : float
-        Normalization cap — the 99th percentile of the metric's observed
-        range during the initial labeled period. Must be > 0.
+        Normalization cap — the larger of a per-metric floor and five times the
+        maximum value the metric takes across pairwise comparisons of thirds of
+        the reference window. It is not a percentile: three sub-window pairs do
+        not admit one, and in practice the floor often binds. Must be > 0.
 
     Returns
     -------
@@ -135,7 +138,7 @@ def estimate_dimensions(
         P_j(t) health values keyed by MonitorCategory. Only categories
         present in this mapping are used for estimation.
     coverage : mapping, optional
-        Coverage weight matrix. Defaults to COVERAGE_WEIGHTS (Table 6).
+        Coverage weight matrix. Defaults to COVERAGE_WEIGHTS.
 
     Returns
     -------

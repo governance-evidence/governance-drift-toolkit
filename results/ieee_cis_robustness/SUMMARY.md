@@ -5,7 +5,7 @@ evidence sufficiency evaluation reported in the accompanying manuscript
 (preprint arXiv:2604.15740). Release identity and reproduction commands:
 [RELEASE.md](RELEASE.md).
 
-Produced by `examples/ieee_cis_robustness.py` (this repository; drift 0.2.2,
+Produced by `examples/ieee_cis_robustness.py` (this repository; drift 0.5.0,
 python 3.14.5, numpy 2.4.3, pandas 2.3.3, scikit-learn 1.8.0, scipy 1.17.1)
 and `examples/ieee_cis_simulator_sensitivity.py` in the
 evidence-sufficiency-calc repository. The variant grid was predefined and
@@ -25,61 +25,54 @@ per-window differences, so errors of opposite sign do not cancel.
 
 Reproduction gate: the base configuration reproduces the demo numbers
 exactly (separation 5/5, 5/5, 0/5; W5 S_proxy 0.131 / 0.184 / 0.296; W5
-actual S 0.120 / 0.035 / 0.007; simulator checkpoints identical to Table 3).
+actual S 0.120 / 0.035 / 0.007; simulator checkpoints identical to Table 3). Simulator values are those of
+Evidence Sufficiency Calculator 0.4.1, reseeded from the cross-fitted reference
+F1; earlier releases do not reproduce them.
 
 Separation rule: |S_proxy(drift, w) - S_proxy(baseline, w)| > delta, delta =
 0.05 unless varied.
 
 ## 1. Separation counts by variant (covariate / mixed / concept, total)
 
+The Total column covers the two conditions whose separation can vary. The
+concept-plus-prior column is reported but excluded from it: its zero is forced
+by the construction, because the injector edits labels only and every quantity
+entering the proxy score is a deterministic function of the untouched feature
+records and the fixed reference model. Averaging it together with the empirical
+conditions would produce a rate that measures the choice to include it.
+
 | Variant | Covariate | Mixed | Concept | Total |
 |---|---|---|---|---|
-| Base (W0, tau_r=0.15, tau_rp=0.55, tau_c=0.6, delta=0.05) | 5/5 | 5/5 | 0/5 | 10/15 |
-| R1 W1 equal weights | 5/5 | 5/5 | 0/5 | 10/15 |
-| R1 W2 reliability-heavy | 5/5 | 5/5 | 0/5 | 10/15 |
-| R1 W3 freshness-light | 5/5 | 5/5 | 0/5 | 10/15 |
-| R2 tau_r_actual 0.10 / 0.20 | 5/5 | 5/5 | 0/5 | 10/15 |
-| R2 tau_r_proxy 0.45 / 0.65 | 5/5 | 5/5 | 0/5 | 10/15 |
-| R2 tau_c 0.5 / 0.7 | 5/5 | 5/5 | 0/5 | 10/15 |
-| R2 delta 0.03 | 5/5 | 5/5 | 0/5 | 10/15 |
-| R2 delta 0.10 | 4/5 | 2/5 | 0/5 | 6/15 |
-| R3 fea+unc (drop score) | 5/5 | 5/5 | 0/5 | 10/15 |
-| R3 scr+fea (drop uncertainty) | 5/5 | 5/5 | 0/5 | 10/15 |
-| R3 scr+unc (drop feature) | 2/5 | 1/5 | 0/5 | 3/15 |
-| R3 fea only | 5/5 | 5/5 | 0/5 | 10/15 |
-| R3 scr only | 3/5 | 1/5 | 0/5 | 4/15 |
-| R3 unc only | 1/5 | 0/5 | 0/5 | 1/15 |
-| R4 without shared C/F components | 5/5 | 5/5 | 0/5 | 10/15 |
-| R5 15-day windows (11 monitored) | 11/11 | 11/11 | 0/11 | 22/33 |
-| R5 45-day windows (3 monitored) | 2/3 | 2/3 | 0/3 | 4/9 |
-| R5 30-day windows, 15-day stride (10 monitored) | 10/10 | 10/10 | 0/10 | 20/30 |
-| R6 HistGradientBoosting (ref F1 0.171, in-sample 0.227) | 5/5 | 5/5 | 0/5 | 10/15 |
-| R7 seed 7 / seed 2026 | 5/5 | 5/5 | 0/5 | 10/15 |
-
-The concept column is zero in every cell, and that is a property of the
-construction rather than a robustness result. The concept-plus-prior
-injector edits labels only; the reference model is fitted once on the
-uninjected reference window and then held fixed; every quantity entering
-S_proxy is a deterministic function of the feature records and that fixed
-model. The paired difference therefore vanishes in every window under every
-variant, and no grid of calibration variants can either strengthen or weaken
-it. The column is retained as an implementation check: it confirms that no
-label information reaches the proxy signals through an unintended path. Note
-also that `tau_r_actual` enters only S_actual, so varying it cannot change
-any separation count; its row is kept for completeness of the executed grid.
-
-Boundary-shifting variants for the conditions that can vary: delta=0.10
-(6/15), 45-day windows (4/9, the weakest-injection window is missed after cap
-recalibration widens the normalization range: PSI cap 0.693, Conf cap 0.808),
-and feature-category ablation (3/15 without feature PSI; uncertainty alone
-1/15).
+| Base (W0, tau_r=0.15, tau_rp=0.55, tau_c=0.6, delta=0.05) | 5/5 | 5/5 | 0/5 | 10/10 |
+| R1 W1 equal weights | 5/5 | 5/5 | 0/5 | 10/10 |
+| R1 W2 reliability-heavy | 5/5 | 5/5 | 0/5 | 10/10 |
+| R1 W3 freshness-light | 5/5 | 5/5 | 0/5 | 10/10 |
+| R2 tau_r_actual 0.10 | 5/5 | 5/5 | 0/5 | 10/10 |
+| R2 tau_r_actual 0.20 | 5/5 | 5/5 | 0/5 | 10/10 |
+| R2 tau_r_proxy 0.45 | 5/5 | 5/5 | 0/5 | 10/10 |
+| R2 tau_r_proxy 0.65 | 5/5 | 5/5 | 0/5 | 10/10 |
+| R2 delta 0.03 | 5/5 | 5/5 | 0/5 | 10/10 |
+| R2 delta 0.10 | 4/5 | 2/5 | 0/5 | 6/10 |
+| R3 fea+unc (drop score) | 5/5 | 5/5 | 0/5 | 10/10 |
+| R3 scr+fea (drop uncertainty) | 5/5 | 5/5 | 0/5 | 10/10 |
+| R3 scr+unc (drop feature) | 2/5 | 1/5 | 0/5 | 3/10 |
+| R3 fea only | 5/5 | 5/5 | 0/5 | 10/10 |
+| R3 scr only | 3/5 | 1/5 | 0/5 | 4/10 |
+| R3 unc only | 1/5 | 0/5 | 0/5 | 1/10 |
+| R4 without shared C/F | 5/5 | 5/5 | 0/5 | 10/10 |
+| R5 15-day windows (11 monitored) | 11/11 | 11/11 | 0/11 | 22/22 |
+| R5 45-day windows (3 monitored) | 2/3 | 2/3 | 0/3 | 4/6 |
+| R5 30-day windows, 15-day stride (10 monitored) | 10/10 | 10/10 | 0/10 | 20/20 |
+| R6 HistGradientBoosting | 5/5 | 5/5 | 0/5 | 10/10 |
+| R7 seed 7 | 5/5 | 5/5 | 0/5 | 10/10 |
+| R7 seed 2026 | 5/5 | 5/5 | 0/5 | 10/10 |
 
 ## 2. Component attribution (R3)
 
 Feature PSI carries separation: it separates the feature-reaching windows
-10/10 alone. Score-distribution alone separates 4/15 (3/5 covariate, 1/5
-mixed); uncertainty alone 1/15 (1/5, 0/5). Dropping score or uncertainty
-from the composite leaves separation unchanged (10/15). Interpretation: in
+10/10 alone. Score-distribution alone separates 4/10 (3/5 covariate, 1/5
+mixed); uncertainty alone 1/10 (1/5, 0/5). Dropping score or uncertainty
+from the composite leaves separation unchanged (10/10). Interpretation: in
 this calibration the marginal separation contribution of the
 score-distribution and uncertainty categories is small; their role is
 reliability-side coverage (R_proxy estimation), not separation. Note:
@@ -137,18 +130,10 @@ across seeds 42/7/2026.
 
 S(t) checkpoints (days 30/60/90/180), base drift specs, one-at-a-time:
 
-| Variant | No drift | Covariate | Concept+prior | Mixed |
+| Variant | No drift | Covariate | Real concept | Mixed |
 |---|---|---|---|---|
-| base lambda=0.02 tau_r=0.15 | 0.481 / 0.394 / 0.306 / 0.037 | 0.456 / 0.326 / 0.211 / 0.019 | 0.400 / 0.229 / 0.104 / 0.009 | 0.440 / 0.273 / 0.151 / 0.012 |
-| lambda=0.01 | 0.530 / 0.456 / 0.362 / 0.043 | 0.504 / 0.384 / 0.261 / 0.024 | 0.441 / 0.266 / 0.124 / 0.011 | 0.485 / 0.321 / 0.185 / 0.015 |
-| lambda=0.04 | 0.419 / 0.341 / 0.274 / 0.036 | 0.395 / 0.276 / 0.182 / 0.018 | 0.348 / 0.197 / 0.092 / 0.009 | 0.381 / 0.233 / 0.131 / 0.012 |
-| tau_r=0.10 | 0.572 / 0.468 / 0.364 / 0.044 | 0.554 / 0.412 / 0.278 / 0.026 | 0.566 / 0.343 / 0.155 / 0.014 | 0.558 / 0.410 / 0.226 / 0.019 |
-| tau_r=0.20 | 0.361 / 0.295 / 0.230 / 0.028 | 0.342 / 0.244 / 0.158 / 0.014 | 0.300 / 0.171 / 0.078 / 0.007 | 0.330 / 0.205 / 0.113 / 0.009 |
-
-Orderings at day 90 and day 180 are stable in every variant (concept+prior
-lowest, no-drift highest). Crossing-day statements are threshold-relative:
-in the base configuration the no-drift trajectory falls below 0.5 at day 26,
-but at tau_r=0.10 it is still above 0.5 at day 30 (0.572), so the crossing
-day does not transfer to other gate calibrations. At tau_r=0.10 the day-30
-separation between concept+prior (0.566) and no-drift (0.572) nearly
-vanishes because the reliability gate barely binds that early.
+| base lambda0.02 taur0.15 | 0.480 / 0.392 / 0.305 / 0.037 | 0.455 / 0.324 / 0.210 / 0.019 | 0.399 / 0.228 / 0.103 / 0.009 | 0.438 / 0.272 / 0.150 / 0.012 |
+| lambda 0.01 | 0.528 / 0.454 / 0.361 / 0.043 | 0.502 / 0.383 / 0.260 / 0.024 | 0.439 / 0.265 / 0.123 / 0.011 | 0.484 / 0.320 / 0.184 / 0.015 |
+| lambda 0.04 | 0.417 / 0.339 / 0.273 / 0.036 | 0.394 / 0.275 / 0.181 / 0.018 | 0.346 / 0.196 / 0.092 / 0.009 | 0.380 / 0.232 / 0.131 / 0.012 |
+| tau r 0.1 | 0.572 / 0.468 / 0.364 / 0.044 | 0.554 / 0.412 / 0.278 / 0.026 | 0.566 / 0.342 / 0.155 / 0.014 | 0.558 / 0.409 / 0.225 / 0.019 |
+| tau r 0.2 | 0.360 / 0.294 / 0.229 / 0.028 | 0.341 / 0.243 / 0.157 / 0.014 | 0.299 / 0.171 / 0.077 / 0.007 | 0.329 / 0.204 / 0.113 / 0.009 |

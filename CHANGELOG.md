@@ -7,7 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `results/ieee_cis_robustness/SUMMARY.md` is rebuilt from the current result
+  JSON. It had been written by hand and fell two releases behind: its simulator
+  checkpoints were pre-reseed values that no longer match the accompanying
+  manuscript, and its Total column still summed the three-condition aggregate
+  the manuscript withdrew. The stored JSON was correct throughout; only this
+  human-readable rendering was stale.
+- `normalize_proxy` no longer documents its cap as a percentile of the reference
+  range. The cap is the larger of a per-metric floor and five times the maximum
+  the metric takes across pairwise comparisons of thirds of the reference
+  window, and in the reported instantiation three of four caps take their floor.
+- The reproduction guard names the release its frozen values belong to instead
+  of reporting `MISMATCH vs v31`, which had been wrong since the 0.4.0 refresh.
+- Docstrings cite the accompanying manuscript's current table numbers. The
+  coverage matrix is its Table 2, not Table 6.
+
 ## [0.5.0] - 2026-08-02
+
+Zenodo release: [10.5281/zenodo.21762798](https://doi.org/10.5281/zenodo.21762798).
 
 ### Changed
 

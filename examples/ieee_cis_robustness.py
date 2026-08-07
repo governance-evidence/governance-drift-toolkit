@@ -61,7 +61,7 @@ BASE_WEIGHTS = {
 BASE_TAUS = {"tau_c": 0.6, "tau_r_actual": 0.15, "tau_r_proxy": 0.55}
 BASE_DELTA = 0.05
 LAMBDA_FRESHNESS = 0.02
-LABEL_DECAY_PER_DAY = 0.004  # 0.12 per 30-day window in the v31 base scheme
+LABEL_DECAY_PER_DAY = 0.004  # 0.12 per 30-day window in the base scheme
 KS_CAP = 0.30
 
 SCENARIOS = ("baseline", "covariate", "mixed", "concept")
@@ -232,7 +232,7 @@ def compute_config_signals(
     ref_features = x_ref.astype(np.float64)
     ref_entropy = compute_prediction_entropy(ref_probs).statistic
 
-    # Cap calibration: identical procedure to the v31 demo (thirds of ref).
+    # Cap calibration: identical procedure to the demo (thirds of the reference).
     n = len(ref_probs)
     third = n // 3
     idx = [slice(0, third), slice(third, 2 * third), slice(2 * third, None)]
@@ -290,7 +290,7 @@ def compute_config_signals(
             conf_stat = compute_confidence_drift(ref_probs, cur_probs).statistic
 
             # Deterministic components and actual dimensions (day-based;
-            # reproduces the v31 inline formulas for the 30d base scheme).
+            # reproduces the demo's inline formulas for the 30d base scheme).
             completeness = max(0.3, 1.0 - LABEL_DECAY_PER_DAY * start_day)
             freshness = float(np.exp(-LAMBDA_FRESHNESS * start_day))
             n_labeled = int(len(cur_df) * completeness)
@@ -565,9 +565,11 @@ def main() -> None:
         )
 
     # Reproduction guard: base config must match the demo's headline numbers.
-    # Refreshed when imputation moved from full-span medians to reference-window
-    # medians applied forward; the previous frozen values were produced under the
-    # leaky procedure and no longer describe this pipeline.
+    # The frozen values are those of drift 0.5.0. They were refreshed twice: at
+    # 0.4.0, when imputation moved from full-span medians to reference-window
+    # medians applied forward and reference F1 became out-of-sample, and at
+    # 0.5.0, when perturbation magnitude moved from window index to calendar day.
+    # Values from before those changes do not describe this pipeline.
     base_summary = detection_summary(aggregate(configs["base_30d_logreg_s42"]))
     expected = {
         "covariate": (5, 0.131, 0.120),
@@ -584,10 +586,10 @@ def main() -> None:
         print(
             f"[repro-guard] {cond}: detected={got['detected']} "
             f"s_proxy_W5={got['s_proxy_last']} s_actual_W5={got['s_actual_last']} "
-            f"{'OK' if ok else 'MISMATCH vs v31'}"
+            f"{'OK' if ok else 'MISMATCH vs the frozen baseline'}"
         )
         if not ok:
-            msg = f"v31 reproduction failed for {cond}: {got} != {det, s_prx, s_act}"
+            msg = f"baseline reproduction failed for {cond}: {got} != {det, s_prx, s_act}"
             raise SystemExit(msg)
 
     grid = run_grid(configs)
